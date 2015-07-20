@@ -1,22 +1,20 @@
 'use strict';
 
-var UserAuth = require('express-user-auth');
+var UserAuth = require('express-user-auth'),
+  config = require('./app/config/config'),
+  mongoose = require('mongoose');
+//http = require('http'),
+//passport = require('passport'),
+//methodOverride = require('method-override'),
+//fs = require('fs'),
+//expressSession = require('express-session'),
+//MongoStore = require('connect-mongo')(expressSession);
 
-var config = require('./app/config/config'),
-    mongoose = require('mongoose'),
-    //http = require('http'),
-    //passport = require('passport'),
-    //methodOverride = require('method-override'),
-    //fs = require('fs'),
-    //expressSession = require('express-session'),
-    //MongoStore = require('connect-mongo')(expressSession);
-    
 var gestiGris = function(app) {
 
 
-  UserAuth.init(app, {
-    config: 'config';
-  });
+  UserAuth.init(app, config.jwt);
+
 
   /*mongoose.connect(config.db);
 
@@ -84,4 +82,3 @@ app.configure('production', function(){
 
 //Bootstrap routes
 //require('./app/config/routes')(app);
-
