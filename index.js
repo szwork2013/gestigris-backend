@@ -1,19 +1,39 @@
 'use strict';
 
 var UserAuth = require('express-user-auth'),
-  config = require('./app/config/config'),
+  config = require('./config/config'),
   mongoose = require('mongoose');
-//http = require('http'),
-//passport = require('passport'),
-//methodOverride = require('method-override'),
-//fs = require('fs'),
-//expressSession = require('express-session'),
-//MongoStore = require('connect-mongo')(expressSession);
 
 var gestiGris = function(app) {
 
+  mongoose.connect(config.mongoose.URI);
 
-  UserAuth.init(app, config.jwt);
+  //UserAuth.init(app, config.jwt);
+
+
+  app.get('/', function(req, res) {
+    res.send('Hello! The API is at http://localhost:' + port + '/api');
+  });
+
+  app.get('/setup', function(req, res) {
+
+    // create a sample user
+    var nick = new User({
+      username: 'admin',
+      password: 'password',
+    });
+
+    // save the sample user
+    nick.save(function(err) {
+      if (err) throw err;
+
+      console.log('User saved successfully');
+      res.json({
+        success: true
+      });
+    });
+  });
+
 
 
   /*mongoose.connect(config.db);
