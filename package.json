@@ -1,5 +1,5 @@
 {
-  "name": "gestigrisBackendUsers",
+  "name": "gestigris-backend",
   "version": "0.0.1",
   "dependencies": {
     "connect-mongo": "^0.8.1",
@@ -8,16 +8,10 @@
     "method-override": "^2.3.2",
     "mongoose": "^4.0.2",
     "passport": "^0.2.1",
-    "passport-local": "^0.1.6"
+    "passport-local": "^0.1.6",
+    "express-user-auth": "git+https://git@github.com:leseulsteve/express-user-auth.git"
   },
-  "devDependencies": {
-    "grunt-contrib-jshint": "^0.11.2",
-    "grunt-contrib-watch": "^0.6.1",
-    "grunt-express-server": "~0.4.5",
-    "jshint-stylish": "~0.1.3",
-    "load-grunt-tasks": "~0.2.0",
-    "time-grunt": "~0.2.1"
-  },
+  "devDependencies": {},
   "engines": {
     "node": ">=0.8.0"
   }
