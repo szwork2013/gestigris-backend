@@ -9,7 +9,7 @@ var gestiGris = function(app) {
 
   mongoose.connect(config.mongoose.URI);
 
-  UserAuth.init(app, User, config.jwt);
+  UserAuth.init(app, User, config.expressUserAuth);
 
   app.route('/api/v1/users')
     .get(function(req, res) {
