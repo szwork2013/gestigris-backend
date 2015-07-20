@@ -5,7 +5,7 @@
     "express": "^4.12.3",
     "express-user-auth": "git+https://git@github.com:leseulsteve/express-user-auth.git",
     "mongoose": "^4.0.2",
-    "mongoose-schema-extend": "^0.1.7",
+    "mongoose-schema-extend": "^0.1.7"
   },
   "devDependencies": {},
   "engines": {
