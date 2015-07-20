@@ -1,6 +1,7 @@
 'use strict';
 
-// Module dependencies.
+var UserAuth = require('express-user-auth');
+
 var config = require('./app/config/config'),
     mongoose = require('mongoose'),
     //http = require('http'),
@@ -12,7 +13,11 @@ var config = require('./app/config/config'),
     
 var gestiGris = function(app) {
 
-  console.log(app)
+
+  UserAuth.init(app, {
+    config: 'config';
+  });
+
   /*mongoose.connect(config.db);
 
 
