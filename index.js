@@ -13,11 +13,10 @@ var gestiGris = function(app) {
 
   app.route('/api/v1/users')
     .get(function(req, res) {
-      User.find({}, function(err, users) {
+      require('./models/user').find({}, function(err, users) {
         res.json(users);
       });
     });
-
 }
 
 module.exports = gestiGris;
