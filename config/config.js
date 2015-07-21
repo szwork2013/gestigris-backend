@@ -7,7 +7,7 @@ module.exports = {
 	expressUserAuth: {
 		user: {
 			schemaPath: './models/user',
-			emailAttribute: 'email'
+			emailAttribute: 'username'
 		},
 		signin: {
 			url: '/api/v1/auth/signin'
@@ -25,10 +25,7 @@ module.exports = {
 		unprotected: ['/api/v1/auth/signin']
 	},
 	mailer: {
-		service: 'Gmail',
-		auth: {
-			user: 'gmail.user@gmail.com',
-			pass: 'userpass'
-		}
+		host: '127.0.0.1',
+    port: 1025
 	}
 };
