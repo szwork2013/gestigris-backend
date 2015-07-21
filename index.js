@@ -7,9 +7,9 @@ var UserAuth = require('express-user-auth'),
 
 var gestiGris = function(app) {
 
-  mongoose.connect(config.mongoose.URI);
+  mongoose.connect(config.mongoose.URI);  
 
-  UserAuth.init(app, config.expressUserAuth);
+  UserAuth.init(app, require('./models/user'), config.expressUserAuth);
 
   UserAuth.setMailTransporter(nodemailer.createTransport(config.mailer));
 
