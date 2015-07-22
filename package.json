@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "dependencies": {
     "express": "^4.12.3",
-    "express-user-auth": "git+https://git@github.com:leseulsteve/express-user-auth.git",
+    "express-user-auth": "git+https://github.com/leseulsteve/express-user-auth.git",
     "mongoose": "^4.0.2",
     "mongoose-schema-extend": "^0.1.7"
   },
