@@ -13,6 +13,12 @@ module.exports = {
 				subject: 'Réinitialisation de votre mot de passe'
 			}
 		},
+		confirmEmail: {
+			mailOptions: {
+				from: 'Steve Boisvert ✔ <leseulsteve@gmail.com>',
+				subject: 'Confirmation de votre courriel'
+			}
+		},
 		token: {
 			options: {
 				expiresInMinutes: 1440
