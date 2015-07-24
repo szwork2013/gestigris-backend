@@ -9,11 +9,11 @@ var gestiGris = function(app) {
 
   mongoose.connect(config.mongoose.URI);  
 
-  UserAuth.init(app, require('./models/user'), nodemailer.createTransport(config.mailer), config.expressUserAuth);
+  UserAuth.init(app, require('./app/models/user'), nodemailer.createTransport(config.mailer), config.expressUserAuth);
 
   app.route('/api/v1/users')
     .get(function(req, res) {
-      require('./models/user').find({}, function(err, users) {
+      require('./app/models/user').find({}, function(err, users) {
         res.json(users);
       });
     });
