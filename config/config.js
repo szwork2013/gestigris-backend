@@ -2,6 +2,10 @@
 
 module.exports = {
 
+	appTitle: 'Gestigris',
+
+	port: process.env.PORT || 3030,
+
 	mongoose: {
 		URI: 'mongodb://localhost/gestigris'
 	},
