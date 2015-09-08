@@ -17,6 +17,9 @@ var UserSchema = UserAuth.getSecureUserSchema().extend({
 		trim: true,
 		required: true
 	},
+	title: {
+		type: String
+	},
 	dateNaissance: {
 		type: Date,
 		required: true
