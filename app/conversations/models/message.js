@@ -12,11 +12,7 @@ var MessageSchema = ExpressBase.getBaseSchema().extend({
 	},
 	author: {
 		type: Schema.ObjectId,
-		ref: 'user'
-	},
-	conversationId: {
-		type: Schema.ObjectId,
-		ref: 'conversation'
+		ref: 'User'
 	},
 	body: {
 		type: String

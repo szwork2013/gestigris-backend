@@ -15,28 +15,10 @@ var InterventionSchema = ExpressBase.getBaseSchema().extend({
 			type: String
 		}
 	},
-	type: {
+	types: [{
 		type: Schema.ObjectId,
 		ref: 'interventiontype'
-	},
-	etablissement: {
-		type: Schema.ObjectId,
-		ref: 'etablissement'
-	},
-	benevoles: {
-		interesses: [{
-			type: Schema.ObjectId,
-			ref: 'user'
-		}],
-		confirmes: [{
-			type: Schema.ObjectId,
-			ref: 'user'
-		}]
-	},
-	conversationId: {
-		type: Schema.ObjectId,
-		ref: 'conversation'
-	}
+	}]
 });
 
 InterventionSchema.statics.can = function(operation, user) {

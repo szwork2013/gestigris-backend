@@ -2,12 +2,15 @@
   "name": "gestigris-backend",
   "version": "0.0.1",
   "dependencies": {
+    "async": "^1.4.2",
     "express-base": "git+https://github.com/leseulsteve/express-base.git",
     "express-user-auth": "git+https://github.com/leseulsteve/express-user-auth.git",
     "lodash-node": "^3.10.1",
+    "moment": "^2.10.6",
     "mongoose": "^4.0.2",
     "mongoose-schema-extend": "^0.1.7",
-    "nodemailer": "^1.4.0"
+    "nodemailer": "^1.4.0",
+    "q": "^1.4.1"
   },
   "devDependencies": {
     "grunt": "^0.4.5",

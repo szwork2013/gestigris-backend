@@ -6,14 +6,16 @@ var mongoose = require('mongoose'),
 	Schema = mongoose.Schema,
 	_ = require('lodash-node');
 
-var ConversationSchema = ExpressBase.getBaseSchema().extend({
-	participants: [{
-		type: Schema.ObjectId,
-		ref: 'user'
-	}]
+var InterventionTypeSchema = ExpressBase.getBaseSchema().extend({
+	name: {
+		type: String
+	},
+	poids: {
+		type: Number
+	}
 });
 
-ConversationSchema.statics.can = function(operation, user) {
+InterventionTypeSchema.statics.can = function(operation, user) {
 	if (_.contains(['READ'], operation)) {
 		return true
 	} else {
@@ -21,4 +23,4 @@ ConversationSchema.statics.can = function(operation, user) {
 	}
 }
 
-module.exports = mongoose.model('conversation', ConversationSchema);
+module.exports = mongoose.model('interventiontype', InterventionTypeSchema);

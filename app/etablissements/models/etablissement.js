@@ -14,6 +14,9 @@ var EtablissementSchema = ExpressBase.getBaseSchema().extend({
 		type: Schema.ObjectId,
 		ref: 'etablissementtype'
 	},
+	imageUrl: {
+		type: String
+	},
 	address: {
 		street: {
 			type: String
@@ -33,7 +36,16 @@ var EtablissementSchema = ExpressBase.getBaseSchema().extend({
 		postalCode: {
 			type: String
 		}
+	},
+	coordinates: {
+		lat: {
+			type: Number
+		},
+		long:{
+			type: Number
+		}
 	}
+
 });
 
 EtablissementSchema.statics.can = function(operation, user) {

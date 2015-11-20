@@ -18,8 +18,12 @@ expressBase.init(config.expressBase, function(app) {
 
 	expressBase.setMailerService(mailer);
 
-	expressBase.getGlobbedFiles('./app/models/*.js').forEach(function(routePath) {
-		require(path.resolve(routePath));
+	expressBase.getGlobbedFiles('./app/models/*.js').concat(expressBase.getGlobbedFiles('./app/**/models/*.js')).forEach(function(modelPath) {
+		require(path.resolve(modelPath));
+	});
+
+	expressBase.getGlobbedFiles('./app/**/routes/*.js').forEach(function(routePath) {
+		require(routePath)(app);
 	});
 
 	expressBase.initDynamicRouter(mongoose.connection, config.expressBase.dynamicRouter);
