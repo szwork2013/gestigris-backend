@@ -1,72 +1,75 @@
 'use strict';
 
 var mongoose = require('mongoose'),
+	q = require('Q'),
 	_ = require('lodash-node'),
 	DemandeParticipation = mongoose.model('demandeparticipation');
 
 module.exports = {
 
-	create: function(req, res) {
-		var demandeParticipation = new DemandeParticipation(req.body);
-		demandeParticipation.user = req.user._id;
+	create: function(interventionId, user) {
 
-		DemandeParticipation.findOne({
-			intervention: demandeParticipation.intervention,
-			user: req.user._id
+		var deffered = q.defer();
+
+		DemandeParticipation.create({
+			intervention: interventionId,
+			user: user._id,
+			created: {
+				user: user._id
+			}
 		}, function(error, demande) {
 
 			if (error) {
-				throw error;
-			};
-
-			if (demande) {
-				return res.status(409).send({
-					message: 'Demande existante',
-					demande: demande
+				
+				if (_.startsWith(error.message, 'E11000 duplicate key error index')) {
+					return deffered.reject({
+						code: 409,
+						reason: 'Demande existante'
+					});
+				}
+				
+				return deffered.reject({
+					code: 400,
+					reason: error.message || error.errmsg
 				});
 			}
 
-			demandeParticipation.save(function(error) {
+			deffered.resolve(_.omit(demande), '__v', '_type', 'alterations', 'created');
 
-				if (error) {
-					throw error;
-				};
-
-				res.status(200).send(demandeParticipation);
-
-			});
 		});
+
+		return deffered.promise;
 	},
 
-	find: function(req, res) {
+	delete: function(interventionId, user) {
 
-		var query = {};
+		var deffered = q.defer();
 
-		if (req.query) {
-			_.forOwn(req.query, function(value, key) {
-				var obj;
-
-				try {
-					obj = JSON.parse(value);
-				} catch (err) {}
-
-				if (obj) {
-					req.query[key] = obj
-				}
-			});
-			_.assign(query, req.query);
-		}
-
-		// Override si jamais un user à été spécifié dans le query.
-		req.query.user = req.user._id;
-
-		DemandeParticipation.find(query, function(error, demandes) {
+		DemandeParticipation.findOne({
+			intervention: interventionId,
+			user: user._id
+		}).remove(function(error, response) {
 
 			if (error) {
-				throw error;
-			};
+				
+				return deffered.reject({
+					code: 400,
+					reason: error.message || error.errmsg
+				});
+			}
 
-			res.status(200).send(demandes);
+			if (response.result.n === 0) {
+				
+				return deffered.reject({
+					code: 404,
+					reason: 'Demande innexistante'
+				});
+			}
+
+			deffered.resolve();
+
 		});
+
+		return deffered.promise;
 	}
 };

@@ -92,23 +92,15 @@ module.exports = {
 					});
 				}
 
-				var participants = _.uniq(conversation.messages, function(message) {
-					return message.author;
-				});
-
-				console.log(participants);
-
-				User.populate(participants, function(error, result) {
-					console.log(error, result)
-				});
-
 				User.populate(conversation.messages, {
 					path: 'author',
-					select: 'firstname lastname title -_id'
-				}, function(err, output) {
+					select: 'firstname lastname title'
+				}, function(err, messages) {
 					if (err) {
 						throw err;
 					}
+
+					conversation.participants = _.uniq(_.pluck(conversation.messages, 'author'));
 
 					conversation.messages = _.sortBy(conversation.messages, function(message) {
 						return new Date(message.date);
@@ -135,7 +127,8 @@ module.exports = {
 				}
 
 				var message = new Message({
-					author: req.user,
+					conversation: conversation._id,
+					author: req.user._id,
 					body: req.body.body
 				})
 
@@ -169,7 +162,7 @@ module.exports = {
 				throw error;
 			}
 
-			if (result.result.n < 1) {
+			if (result.result.ok < 1) {
 				return res.status(404).send({
 					code: 'notFound',
 					message: 'Le message n\'existe pas!'

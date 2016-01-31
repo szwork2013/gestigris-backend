@@ -8,27 +8,30 @@ var mongoose = require('mongoose'),
 
 var DemandeParticipationSchema = ExpressBase.getBaseSchema().extend({
 	date: {
-		type: Date
+		type: Date,
+		default: Date.now,
+		require: true
 	},
 	intervention: {
 		type: Schema.ObjectId,
-		ref: 'intervention'
+		ref: 'intervention',
+		require: true
 	},
 	user: {
 		type: String,
-		ref: 'user'
+		ref: 'user',
+		require: true
 	},
 	accepted: {
 		type: Boolean
 	}
 });
 
-DemandeParticipationSchema.statics.can = function(operation, user) {
-	if (_.contains(['CREATE'], operation)) {
-		return true
-	} else {
-		return _.intersection(user.roles, ['admin']).length > 0;
-	}
-}
+DemandeParticipationSchema.index({
+  user: 1,
+  intervention: 1
+}, {
+  unique: true
+});
 
 module.exports = mongoose.model('demandeparticipation', DemandeParticipationSchema);

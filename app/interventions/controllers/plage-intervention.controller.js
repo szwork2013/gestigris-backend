@@ -1,101 +1,117 @@
 'use strict';
 
 var mongoose = require('mongoose'),
-	_ = require('lodash-node'),
 	q = require('Q'),
+	_ = require('lodash-node'),
 	PlageIntervention = mongoose.model('plageintervention'),
-	etablissementController = require('./etablissement.controller'),
-	interventionController = require('./intervention.controller');
+	Intervention = mongoose.model('intervention'),
+	interventionController = require('./intervention.controller.js');
 
 module.exports = {
 
-	find: function(req, res) {
+	find: function(query, user) {
+
+		var deffered = q.defer();
 
 		PlageIntervention
-			.find()
+			.find(query)
 			.sort('date')
 			.select('-alterations -created -__v -_type')
+			.populate([{
+				path: 'tags',
+				select: '-alterations -created -__v -_type'
+			}, {
+				path: 'etablissement',
+				select: '_id type name address.arrondissement'
+			}])
+			.lean()
 			.exec(function(error, plages) {
 
 				if (error) {
-					console.error(error);
+					return deffered.reject({
+						code: 400,
+						reason: error.message || error.errmsg
+					});
 				}
 
 				var promises = [];
 
-				for (var i = 0; i < plages.length; i++) {
-					plages[i] = plages[i].toObject();
-				};
 				_.forEach(plages, function(plage) {
-
-					promises.push(etablissementController.findById(plage.etablissement).then(function(etablissement) {
-						plage.etablissement = etablissement;
-					}));
-
-					var interventionIds = plage.interventions;
-					plage.interventions = [];
-					_.forEach(interventionIds, function(interventionId) {
-						promises.push(interventionController.getById(req, interventionId).then(function(intervention) {
-							plage.interventions.push(intervention);
-						}));
+					plage.states = [];
+					_.forEach(plage.interventions, function(interventionId) {
+						var deffered2 = q.defer();
+						promises.push(deffered2.promise);
+						Intervention.findById(interventionId)
+							.lean()
+							.exec(function(error, intervention) {
+								interventionController.setInterventionStatus(intervention, user).then(function(intervention) {
+									plage.states.push(intervention.state);
+									deffered2.resolve();
+								});
+							});
 					});
 				});
 
 				q.all(promises).then(function() {
-					_.forEach(plages, function(plage) {
-						var interventions = plage.interventions;
-						plage.interventions = _.sortByAll(interventions, function(intervention) {
-							return new Date(intervention.date.start);
-						});
-					});
-
-					res.status(200).send(plages);
-
-				}).catch(function(error) {
-					console.error(error);
+					deffered.resolve(plages);
 				});
+
 			});
+
+		return deffered.promise;
 	},
 
-	findById: function(req, res) {
+	findById: function(plageInterventionId, user) {
+
+		var deffered = q.defer();
 
 		PlageIntervention
-			.findById(req.params.plageId)
+			.findById(plageInterventionId)
 			.sort('date')
 			.select('-alterations -created -__v -_type')
+			.populate({
+				path: 'tags',
+				select: '-alterations -created -__v -_type'
+			})
+			.lean()
 			.exec(function(error, plage) {
 
 				if (error) {
-					console.error(error);
+					return deffered.reject({
+						code: 400,
+						reason: error.message || error.errmsg
+					});
+				}
+
+				if (_.isNull(plage)) {
+					return deffered.reject({
+						code: 404,
+						reason: 'plage innexistante'
+					});
 				}
 
 				var promises = [];
 
-				plage = plage.toObject();
-
-				promises.push(etablissementController.findById(plage.etablissement).then(function(etablissement) {
-					plage.etablissement = etablissement;
-				}));
-
-				var interventionIds = plage.interventions;
-				plage.interventions = [];
-				_.forEach(interventionIds, function(interventionId) {
-					promises.push(interventionController.getById(req, interventionId).then(function(intervention) {
-						plage.interventions.push(intervention);
-					}));
+				plage.states = [];
+				_.forEach(plage.interventions, function(interventionId) {
+					var deffered2 = q.defer();
+					promises.push(deffered2.promise);
+					Intervention.findById(interventionId)
+						.lean()
+						.exec(function(error, intervention) {
+							interventionController.setInterventionStatus(intervention, user).then(function(intervention) {
+								plage.states.push(intervention.state);
+								deffered2.resolve();
+							});
+						});
 				});
-
 
 				q.all(promises).then(function() {
-					var interventions = plage.interventions;
-					plage.interventions = _.sortByAll(interventions, function(intervention) {
-						return new Date(intervention.date.start);
-					});
-					res.status(200).send(plage);
-
-				}).catch(function(error) {
-					console.error(error);
+					deffered.resolve(plage);
 				});
+
 			});
+
+		return deffered.promise;
 	}
 };

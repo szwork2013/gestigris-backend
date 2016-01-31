@@ -17,15 +17,15 @@ var PlageSchema = ExpressBase.getBaseSchema().extend({
 	interventions: [{
 		type: Schema.ObjectId,
 		ref: 'intervention'
+	}],
+	conversation: {
+		type: Schema.ObjectId,
+		ref: 'conversation'
+	},
+	tags: [{
+		type: Schema.ObjectId,
+		ref: 'intervention-tag'
 	}]
 });
-
-PlageSchema.statics.can = function(operation, user) {
-	if (_.contains(['READ'], operation)) {
-		return true
-	} else {
-		return _.intersection(user.roles, ['admin']).length > 0;
-	}
-}
 
 module.exports = mongoose.model('plageintervention', PlageSchema);

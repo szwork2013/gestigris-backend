@@ -6,18 +6,6 @@ var mongoose = require('mongoose'),
 	Intervention = mongoose.model('intervention'),
 	DemandeParticipation = mongoose.model('demandeparticipation');
 
-function isModifiedSince(ressource, date) {
-	var lastModification = new Date(ressource.created.date);
-	if (ressource.alterations && ressource.alterations.length > 0) {
-		lastModification = new Date(ressource.alterations[ressource.alterations.length - 1].date);
-	}
-	return lastModification > new Date(date);
-}
-
-function interventionIsModifiedSince(intervention, demande, date) {
-	return isModifiedSince(intervention, date) || (_.isNull(demande) ? false : isModifiedSince(demande, date));
-}
-
 function getDemandeParticipation(userId, intervention) {
 	var deffered = q.defer();
 	DemandeParticipation.findOne({
@@ -34,8 +22,6 @@ function getDemandeParticipation(userId, intervention) {
 
 function setInterventionStatus(intervention, demande) {
 
-	intervention = intervention.toObject();
-
 	if (demande) {
 		if (_.isUndefined(demande.accepted)) {
 			intervention.state = 'WAITING';
@@ -50,66 +36,105 @@ function setInterventionStatus(intervention, demande) {
 	return intervention;
 }
 
-function setInterventionsStatus(userId, interventions) {
+module.exports = {
 
-	var promises = [];
-	_.forEach(interventions, function(intervention) {
-		promises.push(getDemandeParticipation(userId, intervention).then(function(demande) {
-			return setInterventionStatus(intervention, demande);
-		}));
-	});
-	return q.all(promises);
-}
+	find: function(plageIntervention, query, user) {
 
-function getById(req, interventionId, res) {
+		var deffered = q.defer();
+
+		Intervention
+			.find(_.assign(query, {
+        _id: {
+          $in: plageIntervention.interventions
+        }
+      }))
+			.populate({
+				path: 'tags',
+				select: '-alterations -created -__v -_type'
+			})
+			.select('-__v -_type -created -alterations')
+			.lean()
+			.exec(function(error, interventions) {
+
+				if (error) {
+					return deffered.reject({
+						code: 400,
+						reason: error.message || error.errmsg
+					});
+				}
+
+				var promises = [];
+
+				_.forEach(interventions, function(intervention) {
+
+					promises.push(getDemandeParticipation(user._id, intervention).then(function(demande) {
+
+						return setInterventionStatus(intervention, demande);
+
+					}).catch(function(error) {
+						return deffered.reject({
+							code: 400,
+							reason: error.message || error.errmsg
+						});
+					}));
+				
+				});
+
+				q.all(promises).then(function(interventions) {
+					deffered.resolve(interventions);
+				});
+
+			});
+
+		return deffered.promise;
+	},
+
+	findById: function(interventionId, user) {
 
 		var deffered = q.defer();
 
 		Intervention
 			.findById(interventionId)
 			.populate({
-				path: 'types',
+				path: 'tags',
 				select: '-alterations -created -__v -_type'
 			})
-			.select('-__v -_type')
+			.select('-__v -_type -created -alterations')
+			.lean()
 			.exec(function(error, intervention) {
 
 				if (error) {
-					console.error(error);
-					throw error;
+					return deffered.reject({
+						code: 400,
+						reason: error.message || error.errmsg
+					});
 				}
 
-				getDemandeParticipation(req.user._id, intervention).then(function(demande) {
-					var ifModifiedSince = req.headers['if-modified-since'];
+				if (_.isNull(intervention)) {
+					return deffered.reject({
+						code: 404,
+						reason: 'intervention innexistante'
+					});
+				}
 
-					if (ifModifiedSince && !interventionIsModifiedSince(intervention, demande, ifModifiedSince)) {
-						return res.status(304).send();
-					}
-
-					intervention.created = undefined;
-					intervention.alterations = undefined;
+				getDemandeParticipation(user._id, intervention).then(function(demande) {
 
 					deffered.resolve(setInterventionStatus(intervention, demande));
 
-				}).catch(function(reason) {
-					console.error(reason);
-					throw new Error(reason);
+				}).catch(function(error) {
+					return deffered.reject({
+						code: 400,
+						reason: error.message || error.errmsg
+					});
 				});
 			});
 
 		return deffered.promise;
-	}
-
-module.exports = {
-
-	getById: function(req, interventionId) {
-		return getById(req, interventionId);
 	},
 
-	findById: function(req, res) {
-
-		getById(req, req.params.interventionId, res).then(function(intervention) {
-			res.status(200).send(intervention);
+	setInterventionStatus: function(intervention, user) {
+		return getDemandeParticipation(user._id, intervention).then(function(demande) {
+			return setInterventionStatus(intervention, demande);
 		});
 	}
 };

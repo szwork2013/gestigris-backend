@@ -15,18 +15,10 @@ var InterventionSchema = ExpressBase.getBaseSchema().extend({
 			type: String
 		}
 	},
-	types: [{
+	tags: [{
 		type: Schema.ObjectId,
-		ref: 'interventiontype'
+		ref: 'intervention-tag'
 	}]
 });
-
-InterventionSchema.statics.can = function(operation, user) {
-	if (_.contains(['READ'], operation)) {
-		return true
-	} else {
-		return _.intersection(user.roles, ['admin']).length > 0;
-	}
-}
 
 module.exports = mongoose.model('intervention', InterventionSchema);

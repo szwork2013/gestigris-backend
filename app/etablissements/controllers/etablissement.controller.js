@@ -7,7 +7,8 @@ var mongoose = require('mongoose'),
 module.exports = {
 
 	findById: function(etablissementId) {
-		var deffered  = q.defer();
+		var deffered = q.defer();
+		
 		Etablissement
 			.findById(etablissementId)
 			.populate([{
@@ -26,11 +27,15 @@ module.exports = {
 			.select('-alterations -created -__v -_type')
 			.exec(function(error, etablissement) {
 				if (error) {
-					deffered.reject(error);
-				} else {
-					deffered.resolve(etablissement);
+					return deffered.reject({
+						code: 400,
+						reason: error.message || error.errmsg
+					});
 				}
+
+				deffered.resolve(etablissement);
+
 			});
-			return deffered.promise;
+		return deffered.promise;
 	}
 };
