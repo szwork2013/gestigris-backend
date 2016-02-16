@@ -28,14 +28,14 @@ var UserSchema = UserAuth.getSecureUserSchema().extend({
 		type: String,
 		trim: true,
 		required: true
+	},
+	avatar: {
+		type: String
 	}
 });
 
 UserAuth.getSecureUserSchema().pre('save', function(next) {
-
-	if (this.isModified('email')) {
-		this.username = this.email;
-	}
+	this.username = this.email;
 	next();
 });
 

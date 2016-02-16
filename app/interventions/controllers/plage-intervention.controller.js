@@ -10,7 +10,6 @@ var mongoose = require('mongoose'),
 module.exports = {
 
 	find: function(query, user) {
-
 		var deffered = q.defer();
 
 		PlageIntervention
@@ -69,10 +68,13 @@ module.exports = {
 			.findById(plageInterventionId)
 			.sort('date')
 			.select('-alterations -created -__v -_type')
-			.populate({
+			.populate([{
 				path: 'tags',
 				select: '-alterations -created -__v -_type'
-			})
+			}, {
+				path: 'etablissement',
+				select: '_id type name address.arrondissement'
+			}])
 			.lean()
 			.exec(function(error, plage) {
 

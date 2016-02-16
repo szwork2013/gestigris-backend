@@ -11,16 +11,12 @@ var ConversationSchema = ExpressBase.getBaseSchema().extend({
 		type: Schema.ObjectId,
 		ref: 'User'
 	}],
-	title:{
+	title: {
 		type: String
 	},
 	type: {
 		type: String
-	},
-	messages: [{
-		type: Schema.ObjectId,
-		ref: 'message'
-	}],
+	}
 });
 
 ConversationSchema.statics.can = function(operation, user) {

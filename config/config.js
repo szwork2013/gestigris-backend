@@ -5,7 +5,7 @@ module.exports = {
 	appTitle: 'Gestigris',
 
 	apiRoot: 'api/v1',
-
+ 
 	expressBase: {
 
 		port: process.env.PORT || 9001,

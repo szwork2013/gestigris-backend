@@ -2,164 +2,245 @@
 
 var mongoose = require('mongoose'),
 	_ = require('lodash-node'),
-	async = require('async'),
+	q = require('Q'),
 	Conversation = mongoose.model('conversation'),
 	Message = mongoose.model('message'),
 	User = mongoose.model('User');
 
 module.exports = {
 
-	find: function(req, res) {
+	create: function(params, user) {
 
-		var query = {};
+		var deffered = q.defer();
 
-		if (req.query) {
-			_.forOwn(req.query, function(value, key) {
-				var obj;
+		Conversation.create(_.assign(params, {
+			participants: [user._id]
+		}), function(error, conversation) {
 
-				try {
-					obj = JSON.parse(value);
-				} catch (err) {}
+			if (error) {
+				return deffered.reject({
+					code: 400,
+					reason: error.message || error.errmsg
+				});
+			}
 
-				if (obj) {
-					req.query[key] = obj
+			Message.create({
+				conversation: conversation._id,
+				author: user._id,
+				body: params.message
+			}, function(error, message) {
+
+				if (error) {
+					return deffered.reject({
+						code: 400,
+						reason: error.message || error.errmsg
+					});
 				}
+
+				User.populate(conversation, {
+					path: 'participants',
+					select: 'firstname lastname pseudo avatar title -_id'
+				}, function(error, conversation) {
+
+					if (error) {
+						return deffered.reject({
+							code: 400,
+							reason: error.message || error.errmsg
+						});
+					}
+
+					User.populate(message, {
+						path: 'author',
+						model: 'User',
+						select: 'lastname firstname title avatar pseudo'
+					}, function(error, message) {
+
+						if (error) {
+							return deffered.reject({
+								code: 400,
+								reason: error.message || error.errmsg
+							});
+						}
+						conversation = conversation.toObject();
+						conversation.messages = [message];
+
+						return deffered.resolve(conversation);
+
+					});
+				});
 			});
-			_.assign(query, req.query);
-		}
+		});
+
+		return deffered.promise;
+	},
+
+	find: function(query, user) {
+
+		var deffered = q.defer();
 
 		Conversation.find(query)
-			.populate([{
-				path: 'messages',
-				select: '-alterations -created -__v -_type'
-			}, {
+			.populate({
 				path: 'participants',
-				select: 'firstname lastname title -_id'
-			}])
+				select: 'firstname lastname avatar title pseudo -_id'
+			})
 			.select('-alterations -created -__v -_type')
+			.lean()
 			.exec(function(error, conversations) {
 
 				if (error) {
-					throw error;
-				};
+					return deffered.reject({
+						code: 400,
+						reason: error.message || error.errmsg
+					});
+				}
 
-				async.forEach(conversations, function(conversation, callback) {
-					User.populate(conversation.messages, {
+				Message.find({
+					conversation: {
+						$in: _.pluck(conversations, '_id')
+					}
+				})
+					.populate({
 						path: 'author',
-						select: '-alterations -created -__v -_type'
-					}, function(err, output) {
-						if (err) {
-							throw err;
+						model: 'User',
+						select: 'lastname firstname avatar title pseudo'
+					})
+					.lean()
+					.sort('created.date')
+					.select('-alterations -__v -_type')
+					.exec(function(error, messages) {
+
+						if (error) {
+							return deffered.reject({
+								code: 400,
+								reason: error.message || error.errmsg
+							});
 						}
 
-						callback();
+						conversations = _.sortBy(conversations, function(conversation) {
+							conversation.messages = _.filter(messages, 'conversation', conversation._id);
+							if (conversation.messages.length > 0) {
+								return new Date(_.last(_.sortBy(conversation.messages, function(message) {
+									return new Date(message.created.date);
+								})).created.date);
+							}
+						}).reverse();
+
+						deffered.resolve(conversations);
 					});
-				}, function(err) {
-
-					_.forEach(conversations, function(conversation) {
-						conversation.messages = _.sortBy(conversation.messages, function(message) {
-							return new Date(message.date);
-						});
-					});
-
-					res.status(200).send(conversations);
-
-				});
 			});
+
+		return deffered.promise;
 	},
 
-	findById: function(req, res) {
+	findById: function(conversationId, user) {
 
-		Conversation.findById(req.params.conversationId)
-			.populate([{
-				path: 'messages',
-				select: '-alterations -created -__v -_type'
-			}, {
+		var deffered = q.defer();
+
+		Conversation.findById(conversationId)
+			.populate({
 				path: 'participants',
-				select: 'firstname lastname title -_id'
-			}])
+				select: 'firstname lastname avatar title pseudo -_id'
+			})
+			.lean()
 			.select('-alterations -created -__v -_type')
 			.exec(function(error, conversation) {
 
 				if (error) {
-					throw error;
-				};
-
-				if (_.isUndefined(conversation)) {
-					return res.status(404).send({
-						code: 'notFound',
-						message: 'Le conversation n\'existe pas!'
+					return deffered.reject({
+						code: 400,
+						reason: error.message || error.errmsg
 					});
 				}
 
-				User.populate(conversation.messages, {
-					path: 'author',
-					select: 'firstname lastname title'
-				}, function(err, messages) {
-					if (err) {
-						throw err;
-					}
-
-					conversation.participants = _.uniq(_.pluck(conversation.messages, 'author'));
-
-					conversation.messages = _.sortBy(conversation.messages, function(message) {
-						return new Date(message.date);
-					});
-
-					res.status(200).send(conversation);
-				});
-			});
-	},
-	createMessage: function(req, res) {
-
-		Conversation.findById(req.body.conversationId,
-			function(error, conversation) {
-
-				if (error) {
-					throw error;
-				};
-
-				if (_.isUndefined(conversation)) {
-					return res.status(404).send({
-						code: 'notFound',
-						message: 'Le conversation n\'existe pas!'
+				if (_.isNull(conversation)) {
+					return deffered.reject({
+						code: 404,
+						reason: 'Le conversation n\'existe pas!'
 					});
 				}
 
-				var message = new Message({
-					conversation: conversation._id,
-					author: req.user._id,
-					body: req.body.body
+				Message.find({
+					conversation: conversation._id
 				})
+					.populate({
+						path: 'author',
+						model: 'User',
+						select: 'lastname firstname avatar title pseudo'
+					})
+					.lean()
+					.sort('created.date')
+					.select('-alterations -__v -_type')
+					.exec(function(error, messages) {
 
-				message.save(function(error, message) {
+						conversation.messages = messages;
 
-					if (error) {
-						throw error;
-					};
-
-					res.status(200).send(message);
-
-					conversation.messages.push(message);
-					conversation.save(function(error) {
-
-						if (error) {
-							throw error;
-						};
+						return error ? deffered.reject({
+							code: 400,
+							reason: error.message || error.errmsg
+						}) : deffered.resolve(conversation);
 
 					});
-				});
+
 			});
+
+		return deffered.promise;
 	},
-	deleteMessage: function(req, res) {
+
+	createMessage: function(conversationId, user, params) {
+
+		var deffered = q.defer();
+
+		Message.create({
+			conversation: conversationId,
+			author: user._id,
+			body: params.body
+		}, function(error, message) {
+
+			if (error) {
+				return deffered.reject({
+					code: 400,
+					reason: error.message || error.errmsg
+				});
+			}
+
+			Conversation.update({
+				_id: conversationId
+			}, {
+				$addToSet: {
+					participants: user._id
+				}
+			});
+
+			User.populate(message, {
+				path: 'author',
+				model: 'User',
+				select: 'lastname firstname avatar title pseudo'
+			}, function(error, message) {
+
+				return error ? deffered.reject({
+					code: 400,
+					reason: error.message || error.errmsg
+				}) : deffered.resolve(message);
+
+			});
+		});
+
+		return deffered.promise;
+	},
+
+	deleteMessage: function(messageId, user) {
+
+		var deffered = q.defer();
 
 		Message.remove({
-			_id: req.params.messageId,
-			author: req.user._id
+			_id: messageId
 		}, function(error, result) {
 
 			if (error) {
-				throw error;
+				return deffered.reject({
+					code: 400,
+					reason: error.message || error.errmsg
+				});
 			}
 
 			if (result.result.ok < 1) {
@@ -169,21 +250,9 @@ module.exports = {
 				});
 			}
 
-			res.status(200).send();
-
-			Conversation.update({
-				messages: req.params.messageId
-			}, {
-				$pull: {
-					messages: req.params.messageId
-				}
-			}, function(error) {
-
-				if (error) {
-					throw error;
-				};
-
-			});
+			deffered.resolve();
 		});
+
+		return deffered.promise;
 	}
 };

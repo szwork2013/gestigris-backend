@@ -22,8 +22,8 @@ module.exports = function(router, socket) {
   router.route('/:plageInterventionId')
 
   .get(function(req, res) {
-    plageInterventionController.findById(req.params.plageInterventionId, req.user).then(function(plagesIntervention) {
-      res.status(200).send(plagesIntervention);
+    plageInterventionController.findById(req.params.plageInterventionId, req.user).then(function(plageInterventions) {
+       res.status(200).send(plageInterventions);
     }).catch(function(error) {
       res.status(error.code).send(error.reason);
     });
@@ -36,16 +36,6 @@ module.exports = function(router, socket) {
       return interventionController.find(plageIntervention, req.query, req.user).then(function(intervention) {
         res.status(200).send(intervention);
       });
-    }).catch(function(error) {
-      res.status(error.code).send(error.reason);
-    });
-  });
-
-  router.route('/:plageInterventionId/intervention/:interventionId')
-
-  .get(function(req, res) {
-    interventionController.findById(req.params.interventionId, req.user).then(function(intervention) {
-      res.status(200).send(intervention);
     }).catch(function(error) {
       res.status(error.code).send(error.reason);
     });
