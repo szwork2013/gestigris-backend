@@ -2,7 +2,7 @@
 
 var mongoose = require('mongoose'),
 	_ = require('lodash-node'),
-	q = require('Q'),
+	q = require('q'),
 	Conversation = mongoose.model('conversation'),
 	Message = mongoose.model('message'),
 	User = mongoose.model('User');

@@ -1,7 +1,7 @@
 'use strict';
 
 var mongoose = require('mongoose'),
-	q = require('Q'),
+	q = require('q'),
 	_ = require('lodash-node'),
 	DemandeParticipation = mongoose.model('demandeparticipation');
 

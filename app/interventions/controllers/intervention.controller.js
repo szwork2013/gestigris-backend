@@ -2,7 +2,7 @@
 
 var mongoose = require('mongoose'),
 	_ = require('lodash-node'),
-	q = require('Q'),
+	q = require('q'),
 	Intervention = mongoose.model('intervention'),
 	DemandeParticipation = mongoose.model('demandeparticipation');
 

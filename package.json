@@ -2,6 +2,7 @@
   "name": "gestigris-backend",
   "version": "0.0.1",
   "dependencies": {
+    "chalk": "^1.1.0",
     "express-base": "git+https://github.com/leseulsteve/express-base.git",
     "express-user-auth": "git+https://github.com/leseulsteve/express-user-auth.git",
     "jsonwebtoken": "^5.5.4",
@@ -15,7 +16,6 @@
   },
   "devDependencies": {
     "grunt": "^0.4.5",
-    "chalk": "^1.1.0",
     "grunt-contrib-jshint": "^0.11.2",
     "grunt-contrib-watch": "^0.6.1",
     "grunt-express-server": "~0.4.5",

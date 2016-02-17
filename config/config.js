@@ -25,7 +25,7 @@ module.exports = {
 
 	mongoose: {
 
-		URI: 'mongodb://localhost/gestigris'
+		URI: process.env.mongoURI ||  'mongodb://localhost/gestigris'
 
 	},
 
