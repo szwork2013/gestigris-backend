@@ -16,8 +16,6 @@ expressBase.init(config.expressBase, function(app, express) {
 
 	var mailer = nodemailer.createTransport(config.mailer);
 
-	//userAuth.init(app, require('./app/models/user'), config.expressUserAuth, mailer);
-
 	expressBase.setMailerService(mailer);
 
 	expressBase.getGlobbedFiles('./app/models/*.js').concat(expressBase.getGlobbedFiles('./app/**/models/*.js')).forEach(function(modelPath) {
@@ -84,7 +82,7 @@ expressBase.init(config.expressBase, function(app, express) {
 						req.query[key] = obj;
 					}
 				});
-			}
+			} 
 
 			next();
 
@@ -92,6 +90,9 @@ expressBase.init(config.expressBase, function(app, express) {
 
 
 	});
+
+		userAuth.init(app, require('./app/models/user'), config.expressUserAuth, mailer);
+
 
 	var socketFactory = require('./app/socket/socket-factory')(app, config);
 

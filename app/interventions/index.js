@@ -23,7 +23,7 @@ module.exports = function(router, socket) {
 
   .get(function(req, res) {
     plageInterventionController.findById(req.params.plageInterventionId, req.user).then(function(plageInterventions) {
-       res.status(200).send(plageInterventions);
+      res.status(200).send(plageInterventions);
     }).catch(function(error) {
       res.status(error.code).send(error.reason);
     });

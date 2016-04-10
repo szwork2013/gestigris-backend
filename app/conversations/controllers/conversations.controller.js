@@ -39,7 +39,7 @@ module.exports = {
 
 				User.populate(conversation, {
 					path: 'participants',
-					select: 'firstname lastname pseudo avatar title -_id'
+					select: 'firstname lastname pseudo avatar title'
 				}, function(error, conversation) {
 
 					if (error) {
@@ -52,7 +52,7 @@ module.exports = {
 					User.populate(message, {
 						path: 'author',
 						model: 'User',
-						select: 'lastname firstname title avatar pseudo'
+					select: 'firstname lastname pseudo avatar title'
 					}, function(error, message) {
 
 						if (error) {
@@ -81,7 +81,7 @@ module.exports = {
 		Conversation.find(query)
 			.populate({
 				path: 'participants',
-				select: 'firstname lastname avatar title pseudo -_id'
+					select: 'firstname lastname pseudo avatar title'
 			})
 			.select('-alterations -created -__v -_type')
 			.lean()
@@ -102,7 +102,7 @@ module.exports = {
 					.populate({
 						path: 'author',
 						model: 'User',
-						select: 'lastname firstname avatar title pseudo'
+					select: 'firstname lastname pseudo avatar title'
 					})
 					.lean()
 					.sort('created.date')
@@ -139,7 +139,7 @@ module.exports = {
 		Conversation.findById(conversationId)
 			.populate({
 				path: 'participants',
-				select: 'firstname lastname avatar title pseudo -_id'
+					select: 'firstname lastname pseudo avatar title'
 			})
 			.lean()
 			.select('-alterations -created -__v -_type')
@@ -209,12 +209,14 @@ module.exports = {
 				$addToSet: {
 					participants: user._id
 				}
+			}, function(error, results) {
+				console.log(error, results);
 			});
 
 			User.populate(message, {
 				path: 'author',
 				model: 'User',
-				select: 'lastname firstname avatar title pseudo'
+					select: 'firstname lastname pseudo avatar title'
 			}, function(error, message) {
 
 				return error ? deffered.reject({

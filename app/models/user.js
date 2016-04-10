@@ -29,6 +29,10 @@ var UserSchema = UserAuth.getSecureUserSchema().extend({
 		trim: true,
 		required: true
 	},
+	voiture: {
+		type: Boolean,
+		default: false
+	},
 	avatar: {
 		type: String
 	}

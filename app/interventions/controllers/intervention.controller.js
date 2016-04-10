@@ -35,7 +35,7 @@ function populateParticipants(intervention) {
 		.populate({
 			path: 'user',
 			model: 'User',
-			select: 'lastname firstname title pseudo'
+					select: 'firstname lastname pseudo avatar title voiture'
 		})
 		.exec(function(error, demandes) {
 
@@ -45,7 +45,6 @@ function populateParticipants(intervention) {
 					reason: error.message || error.errmsg
 				});
 			}
-
 			intervention.participants = _.pluck(demandes, 'user');
 			deffered.resolve(intervention);
 		});
@@ -84,6 +83,7 @@ module.exports = {
 				path: 'tags',
 				select: '-alterations -created -__v -_type'
 			})
+			.sort('date.start')
 			.select('-__v -_type -created -alterations')
 			.lean()
 			.exec(function(error, interventions) {
