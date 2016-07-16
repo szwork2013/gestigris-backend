@@ -41,11 +41,22 @@ var EtablissementSchema = ExpressBase.getBaseSchema().extend({
 		lat: {
 			type: Number
 		},
-		long:{
+		long: {
 			type: Number
 		}
 	}
-
+	osmId: {
+		type: String
+	},
+	osmType: {
+		type: String
+	},
+	placeId: {
+		type: String
+	},
+	placeType: {
+		type: String
+	},
 });
 
 EtablissementSchema.statics.can = function(operation, user) {
