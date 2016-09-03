@@ -44,7 +44,7 @@ var EtablissementSchema = ExpressBase.getBaseSchema().extend({
 		long: {
 			type: Number
 		}
-	}
+	},
 	osmId: {
 		type: String
 	},
