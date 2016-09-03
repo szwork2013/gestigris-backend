@@ -53,15 +53,15 @@ expressBase.init(config.expressBase, function(app, express) {
 
 	app.all('*', function(req, res, next) {
 
-		var userId = req.header('Authorization');
+		/*var userId = req.header('Authorization');
 
 		if (!userId) {
 			return res.status(401).send({
 				message: 'No token foud'
 			});
-		}
+		}*/
 
-		User.findById(userId, function(error, user) {
+		User.findOne({}, function(error, user) {
 
 			if (error) {
 				return res.status(401).send({
